@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Watch Video - Video Sharing{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mb-4">{{ video[1] }}</h2>
+        <div class="mb-4">
+            <video width="100%" height="auto" controls class="rounded shadow">
+                <source src="/static/videos/{{ video[2] }}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        <div class="text-center">
+            <a href="/" class="text-decoration-none">&larr; Back to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

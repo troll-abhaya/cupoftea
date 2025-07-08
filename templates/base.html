@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Video Sharing{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  {% block custom_css %}{% endblock %}
+</head>
+<body class="bg-[#181818] text-white">
+
+  <!-- Header/Navbar -->
+  <header class="bg-[#000] shadow-md sticky top-0 z-50">
+    <nav class="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+      
+      <!-- Logo -->
+      <a href="/" class="text-2xl md:text-2xl font-bold tracking-wide select-none">
+        <img src="/static/Nep-Hub.svg" alt="" class="h-20 w-30 transition">
+      </a>
+      
+      <!-- Nav Links -->
+      <ul class="hidden md:flex space-x-6 text-sm font-medium text-gray-300">
+        <li>
+          <a href="/" class="px-3 py-2 rounded-lg transition hover:bg-[#383838] hover:text-blue-400 
+          {% if request.path == '/' %}bg-[#383838] text-blue-400 font-semibold{% endif %}">Home</a>
+        </li>
+        <li>
+          <a href="/upload" class="px-3 py-2 rounded-lg transition hover:bg-[#383838] hover:text-blue-400 
+          {% if request.path == '/upload' %}bg-[#383838] text-blue-400 font-semibold{% endif %}">Upload</a>
+        </li>
+        <li>
+          <a href="#" class="px-3 py-2 rounded-lg transition hover:bg-[#383838] hover:text-blue-400">My Channel</a>
+        </li>
+        <li>
+          <a href="#" class="px-3 py-2 rounded-lg transition hover:bg-[#383838] hover:text-blue-400">Subscriptions</a>
+        </li>
+      </ul>
+
+      <!-- Auth Buttons -->
+      <div class="hidden md:flex items-center space-x-4">
+        <a href="/login" class="text-sm px-4 py-2 rounded-lg bg-transparent text-gray-300 hover:text-blue-400 transition">Login</a>
+        <a href="/signup" class="text-sm px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition">Sign Up</a>
+      </div>
+
+      <!-- Mobile Menu Toggle -->
+      <div class="md:hidden">
+        <button id="menu-btn" class="focus:outline-none">
+          <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            viewBox="0 0 24 24">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-[#212121] border-t border-[#383838]">
+      <ul class="flex flex-col px-6 py-4 space-y-3 text-gray-300 text-sm">
+        <li><a href="/" class="block py-2 rounded hover:bg-[#383838] transition {% if request.path == '/' %}bg-[#383838] text-blue-400 font-semibold{% endif %}">Home</a></li>
+        <li><a href="/upload" class="block py-2 rounded hover:bg-[#383838] transition {% if request.path == '/upload' %}bg-[#383838] text-blue-400 font-semibold{% endif %}">Upload</a></li>
+        <li><a href="#" class="block py-2 rounded hover:bg-[#383838] transition">My Channel</a></li>
+        <li><a href="#" class="block py-2 rounded hover:bg-[#383838] transition">Subscriptions</a></li>
+        <li><a href="/login" class="block py-2 rounded hover:bg-[#383838] transition text-gray-300">Login</a></li>
+        <li><a href="/signup" class="block py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-center">Sign Up</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    // Toggle mobile nav
+    const btn = document.getElementById('menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => {
+      menu.classList.toggle('hidden');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends 'layout.html' %}
+
+{% block title %}Home - Video Sharing{% endblock %}
+
+{% block content %}
+<div class="p-8 bg-[#181818] min-h-screen">
+
+  {% if videos %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    {% for vid in videos %}
+    <a href="/watch/{{ vid[0] }}" class="block bg-gray-900 rounded-xl overflow-hidden hover:shadow-2xl transition duration-300 cursor-pointer">
+
+      <video 
+        class="w-full h-48 object-cover rounded-t-xl" 
+        muted 
+        preload="metadata" 
+        playsinline
+        poster="/static/thumbnails/{{ vid[2].replace('.mp4', '.jpg') }}"
+      >
+        <source src="/static/videos/{{ vid[2] }}" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+
+      <div class="p-4 flex items-center gap-3">
+        <div class="w-10 h-10 bg-gray-700 rounded-full flex-shrink-0"></div>
+        <div class="flex flex-col overflow-hidden">
+          <h3 class="text-white font-semibold text-md truncate">{{ vid[1] }}</h3>
+          <p class="text-sm text-gray-400">By Admin</p>
+          <p class="text-xs text-gray-500">Views • Date</p>
+        </div>
+      </div>
+
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center text-gray-400 mt-20 text-lg">
+    No videos uploaded yet. Be the first to <a href="/upload" class="text-blue-400 underline">upload one</a>.
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
