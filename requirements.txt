@@ -3,4 +3,3 @@ Werkzeug
 Jinja2
 itsdangerous
 click
-sqlite3
