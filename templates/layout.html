@@ -5,90 +5,163 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}Video Sharing{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/static/service-worker.js');
+      });
+    }
+  </script>
   {% block custom_css %}{% endblock %}
+  <script>
+    // PWA Install Prompt for Mobile
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Show custom install banner only on mobile
+      if (window.innerWidth < 768) {
+        document.getElementById('install-app-banner').style.display = 'flex';
+      }
+    });
+    function installApp() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            document.getElementById('install-app-banner').style.display = 'none';
+          }
+        });
+      }
+    }
+    function closeInstallBanner() {
+      document.getElementById('install-app-banner').style.display = 'none';
+    }
+  </script>
+  <style>
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #111;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
+    /* Flash messages animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .flash-message {
+      animation: fadeIn 0.3s ease-out;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 </head>
-<body class="bg-[#181818] text-white">
-
-  <!-- Header/Navbar -->
-  <header class="bg-[#000] shadow-md sticky top-0 z-50">
-    <nav class="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-      
-      <!-- Logo -->
-      <a href="/" class="text-2xl md:text-2xl font-bold tracking-wide select-none">
-        <img src="/static/Nep-Hub.svg" alt="" class="h-20 w-30 transition">
-      </a>
-      
-      <!-- Nav Links -->
-      <ul class="hidden md:flex space-x-6 text-sm font-medium text-gray-300">
-        <li>
-          <a href="/" class="px-3 py-2 rounded-lg transition hover:bg-[#383838] hover:text-blue-400 
-          {% if request.path == '/' %}bg-[#383838] text-blue-400 font-semibold{% endif %}">Home</a>
-        </li>
-        {% if session.username %}
-        <li>
-          <a href="/upload" class="px-3 py-2 rounded-lg transition hover:bg-[#383838] hover:text-blue-400 
-          {% if request.path == '/upload' %}bg-[#383838] text-blue-400 font-semibold{% endif %}">Upload</a>
-        </li>
-        <li>
-          <a href="/profile" class="px-3 py-2 rounded-lg hover:bg-[#383838] flex items-center space-x-2">
-            <img src="/static/profile-icon.png" alt="Profile" class="h-6 w-6 rounded-full" />
-            <span>{{ session.username }}</span>
-          </a>
-        </li>
-        <li>
-          <a href="/logout" class="px-3 py-2 rounded-lg hover:bg-[#383838] text-red-500 font-semibold">Logout</a>
-        </li>
-        {% else %}
-        <li>
-          <a href="/login" class="px-3 py-2 rounded-lg hover:bg-[#383838]">Login</a>
-        </li>
-        <li>
-          <a href="/signup" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition">Sign Up</a>
-        </li>
-        {% endif %}
-      </ul>
-
-      <!-- Mobile Menu Toggle -->
-      <div class="md:hidden">
-        <button id="menu-btn" class="focus:outline-none">
-          <svg class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-            viewBox="0 0 24 24">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
+<body class="bg-[#000] text-white">
+  <div id="install-app-banner" style="display:none; position:fixed; bottom:24px; left:0; right:0; z-index:9999; justify-content:center; align-items:center;">
+    <div class="mx-auto max-w-xs bg-[#181818] border border-[#333] rounded-xl shadow-lg flex items-center p-4 gap-4">
+      <img src="/static/Nep-Hub.svg" alt="App Icon" class="w-10 h-10 rounded" />
+      <div class="flex-1">
+        <div class="font-semibold text-white text-base">Install OnlyFans Nepal?</div>
+        <div class="text-xs text-gray-400">Get the full app experience on your device.</div>
       </div>
-    </nav>
-
-    <!-- Mobile Menu -->
-    <div id="mobile-menu" class="hidden md:hidden bg-[#212121] border-t border-[#383838]">
-      <ul class="flex flex-col px-6 py-4 space-y-3 text-gray-300 text-sm">
-        <li><a href="/" class="block py-2 rounded hover:bg-[#383838] transition {% if request.path == '/' %}bg-[#383838] text-blue-400 font-semibold{% endif %}">Home</a></li>
-        {% if session.username %}
-        <li><a href="/upload" class="block py-2 rounded hover:bg-[#383838] transition {% if request.path == '/upload' %}bg-[#383838] text-blue-400 font-semibold{% endif %}">Upload</a></li>
-        <li><a href="/profile" class="block py-2 rounded hover:bg-[#383838] transition">Profile ({{ session.username }})</a></li>
-        <li><a href="/logout" class="block py-2 rounded hover:bg-red-500 font-semibold">Logout</a></li>
-        {% else %}
-        <li><a href="/login" class="block py-2 rounded hover:bg-[#383838] transition">Login</a></li>
-        <li><a href="/signup" class="block py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-center">Sign Up</a></li>
-        {% endif %}
-      </ul>
+      <button onclick="installApp()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md font-medium text-sm">Install</button>
+      <button onclick="closeInstallBanner()" class="text-gray-400 hover:text-white ml-2 text-lg">&times;</button>
     </div>
+  </div>
+  <!-- Top Navbar/Header (mobile & desktop) -->
+  <header class="bg-gradient-to-r from-[#181818] via-[#222] to-[#181818] border-b border-[#333] sticky top-0 z-30 w-full flex items-center justify-between px-4 py-2 md:px-8 md:py-4 shadow-lg">
+    <!-- Left: Logo -->
+    <a href="/" class="flex items-center space-x-2">
+      <img src="/static/logo.png" alt="Logo" class="w-10 h-10 md:w-14 md:h-14 rounded shadow-lg" />
+      <span class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-blue-400 to-blue-700 bg-clip-text text-transparent hidden sm:inline">OnlyFans Nepal</span>
+    </a>
+    <!-- Center: Search (desktop) -->
+    <div class="hidden md:flex flex-1 max-w-2xl mx-8">
+      <form action="/search" method="get" class="relative w-full">
+        <input type="text" name="q" placeholder="Search videos..." class="w-full bg-[#23272f] border border-[#333] text-white px-5 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner">
+        <button class="absolute right-0 top-0 h-full px-5 text-blue-400 hover:text-white">
+          <i class="fas fa-search text-xl"></i>
+        </button>
+      </form>
+    </div>
+    <!-- Right: Notification & Profile -->
+    <div class="flex items-center space-x-4">
+      <a href="#" class="text-gray-400 hover:text-blue-400 text-2xl md:text-xl"><i class="fas fa-bell"></i></a>
+      {% if session.username %}
+      <a href="/profile" class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 bg-blue-600 rounded-full text-white font-bold overflow-hidden border-2 border-blue-400 shadow">
+        <span class="hidden md:inline">{{ session.username[0].upper() }}</span>
+        <img src="/static/logo.png" alt="Profile" class="w-full h-full object-cover md:hidden" />
+      </a>
+      {% else %}
+      <a href="/login" class="text-blue-500 hover:text-blue-400 px-3 py-1.5 rounded-md text-sm font-medium">Sign In</a>
+      <a href="/signup" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded-md text-sm font-medium transition">Sign Up</a>
+      {% endif %}
+    </div>
+    <!-- Mobile Search Icon -->
+    <a href="#" class="md:hidden text-blue-400 hover:text-white text-2xl ml-2"><i class="fas fa-search"></i></a>
   </header>
-
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto px-6 py-8">
+  <!-- Mobile Search Bar (hidden by default, can be toggled with JS if needed) -->
+  <!-- Main Content Area (full width, no sidebar) -->
+  <main class="flex-1 overflow-y-auto p-8 pb-24 md:pb-8">
     {% block content %}{% endblock %}
   </main>
-
+  <!-- Bottom Navbar (mobile only, full icons, Font Awesome) -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-[#181818] border-t border-[#333] flex justify-between items-center px-0 py-0 md:hidden">
+    <a href="/" class="flex-1 flex items-center justify-center py-2 text-gray-400 hover:text-blue-500">
+      <i class="fas fa-home fa-2x" aria-label="Home"></i>
+    </a>
+    <a href="/subscriptions" class="flex-1 flex items-center justify-center py-2 text-gray-400 hover:text-blue-500">
+      <i class="fas fa-play-circle fa-2x" aria-label="Subscriptions"></i>
+    </a>
+    <a href="/upload" class="flex-1 flex items-center justify-center py-2 text-blue-600">
+      <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center shadow-lg border-4 border-[#181818] -mt-6">
+        <i class="fas fa-plus fa-2x text-white" aria-label="Create"></i>
+      </div>
+    </a>
+    <a href="/profile" class="flex-1 flex items-center justify-center py-2 text-gray-400 hover:text-blue-500">
+      <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center overflow-hidden">
+        {% if session.username %}
+        <span class="font-bold text-white text-xl">{{ session.username[0].upper() }}</span>
+        {% else %}
+        <i class="fas fa-user fa-lg text-white" aria-label="Profile"></i>
+        {% endif %}
+      </div>
+    </a>
+  </nav>
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="px-6 py-3">
+        {% for category, message in messages %}
+          <div class="flash-message bg-{{ 'green' if category == 'success' else 'blue' if category == 'info' else 'red' }}-500 bg-opacity-20 border border-{{ 'green' if category == 'success' else 'blue' if category == 'info' else 'red' }}-500 text-{{ 'green' if category == 'success' else 'blue' if category == 'info' else 'red' }}-500 px-4 py-3 rounded mb-4">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
   <script>
-    // Toggle mobile nav
-    const btn = document.getElementById('menu-btn');
-    const menu = document.getElementById('mobile-menu');
-    btn.addEventListener('click', () => {
-      menu.classList.toggle('hidden');
-    });
+    // Auto-hide flash messages after 5 seconds
+    const flashMessages = document.querySelectorAll('.flash-message');
+    if (flashMessages.length > 0) {
+      setTimeout(() => {
+        flashMessages.forEach(msg => {
+          msg.style.opacity = '0';
+          msg.style.transform = 'translateY(-10px)';
+          msg.style.transition = 'opacity 0.5s, transform 0.5s';
+          setTimeout(() => msg.remove(), 500);
+        });
+      }, 5000);
+    }
   </script>
 </body>
 </html>

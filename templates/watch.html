@@ -1,18 +1,88 @@
-{% extends 'base.html' %}
-{% block title %}Watch Video - Video Sharing{% endblock %}
+{% extends 'layout.html' %}
+{% block title %}Watch - {{ video.title }} | OnlyFans Nepal{% endblock %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <h2 class="mb-4">{{ video[1] }}</h2>
-        <div class="mb-4">
-            <video width="100%" height="auto" controls class="rounded shadow">
-                <source src="/static/videos/{{ video[2] }}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
+<div class="container mx-auto px-4 py-6">
+    <div class="max-w-6xl mx-auto flex flex-col lg:flex-row gap-8">
+        <!-- Main Video Section -->
+        <div class="flex-1">
+            <!-- Video Player (16:9 Landscape) -->
+            <div class="relative w-full aspect-video bg-black rounded-lg overflow-hidden mb-6">
+                <video 
+                    class="absolute inset-0 w-full h-full object-cover rounded-lg"
+                    controls
+                    autoplay
+                    playsinline
+                >
+                    <source src="/static/videos/{{ video.filename }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            <!-- Video Info -->
+            <div class="bg-[#181818] rounded-lg p-6 mb-6 shadow">
+                <h1 class="text-2xl font-bold text-white mb-2">{{ video.title }}</h1>
+                <div class="flex flex-wrap justify-between items-center border-b border-[#333] pb-4 mb-4">
+                    <div class="flex items-center space-x-2 text-sm text-gray-400">
+                        <span>{{ video.views }} views</span>
+                        <span>•</span>
+                        <span>{{ video.created_at.split(' ')[0] }}</span>
+                    </div>
+                    <div class="flex space-x-4 mt-2 lg:mt-0">
+                        <button class="flex items-center space-x-1 text-gray-400 hover:text-blue-500">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Like</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-gray-400 hover:text-blue-500">
+                            <i class="fas fa-thumbs-down"></i>
+                            <span>Dislike</span>
+                        </button>
+                        <button class="flex items-center space-x-1 text-gray-400 hover:text-blue-500">
+                            <i class="fas fa-share"></i>
+                            <span>Share</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Uploader Info -->
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-xl font-bold text-white">
+                        {{ video.uploader and video.uploader[0]|upper or '?' }}
+                    </div>
+                    <div>
+                        <h3 class="text-white font-medium">{{ video.uploader or 'Unknown' }}</h3>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="text-center">
-            <a href="/" class="text-decoration-none">&larr; Back to Home</a>
-        </div>
+        <!-- Up Next Section -->
+        <aside class="w-full lg:w-96 flex-shrink-0">
+            <h2 class="text-lg font-semibold text-white mb-4">Up Next</h2>
+            <div class="space-y-4">
+                {% for upnext in upnext_videos %}
+                <a href="/watch/{{ upnext.id }}" class="flex gap-3 bg-[#181818] rounded-lg hover:bg-[#222] transition p-2">
+                    <div class="w-32 aspect-video bg-[#111] rounded-md overflow-hidden flex-shrink-0">
+                        <video class="w-full h-full object-cover" muted preload="metadata" poster="/static/thumbnails/{{ upnext.filename.replace('.mp4', '.jpg') }}">
+                            <source src="/static/videos/{{ upnext.filename }}" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <h3 class="text-white font-medium text-sm truncate">{{ upnext.title }}</h3>
+                        <p class="text-xs text-gray-400 truncate">{{ upnext.uploader or 'Unknown' }}</p>
+                        <div class="flex items-center text-xs text-gray-500 mt-1">
+                            <span>{{ upnext.views }} views</span>
+                            <span class="mx-1">•</span>
+                            <span>{{ upnext.created_at.split(' ')[0] }}</span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </aside>
+    </div>
+    <!-- Back Button -->
+    <div class="mb-8 mt-8">
+        <a href="/" class="inline-flex items-center space-x-2 text-blue-500 hover:text-blue-400 transition">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Home</span>
+        </a>
     </div>
 </div>
 {% endblock %}

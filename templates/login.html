@@ -1,14 +1,39 @@
 {% extends "layout.html" %}
 {% block title %}Login{% endblock %}
 {% block content %}
-<div class="max-w-md mx-auto bg-[#222] p-6 rounded-md">
-  <h2 class="text-2xl mb-4">Login</h2>
+<div class="max-w-md mx-auto bg-[#222] p-8 rounded-lg shadow-lg">
+  <h2 class="text-2xl font-bold mb-6 text-center">Login to Your Account</h2>
+  
   {% if error %}
-  <p class="text-red-500 mb-3">{{ error }}</p>
+  <div class="bg-red-500 bg-opacity-20 border border-red-500 text-red-500 px-4 py-3 rounded mb-4">
+    {{ error }}
+  </div>
   {% endif %}
-  <form method="POST" class="flex flex-col space-y-4">
-    <input type="text" name="username" placeholder="Username" class="p-2 rounded bg-[#333] text-white" required />
-    <button type="submit" class="bg-blue-600 hover:bg-blue-700 p-2 rounded text-white">Login</button>
+  
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="bg-{{ 'green' if category == 'success' else 'blue' }}-500 bg-opacity-20 border border-{{ 'green' if category == 'success' else 'blue' }}-500 text-{{ 'green' if category == 'success' else 'blue' }}-500 px-4 py-3 rounded mb-4">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  
+  <form method="POST" class="flex flex-col space-y-5">
+    <div>
+      <label for="username" class="block text-sm font-medium text-gray-400 mb-1">Username</label>
+      <input type="text" id="username" name="username" placeholder="Enter your username" class="w-full p-3 rounded bg-[#333] text-white border border-[#444] focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+    </div>
+    
+    <div>
+      <label for="password" class="block text-sm font-medium text-gray-400 mb-1">Password</label>
+      <input type="password" id="password" name="password" placeholder="Enter your password" class="w-full p-3 rounded bg-[#333] text-white border border-[#444] focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+    </div>
+    
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 p-3 rounded-md text-white font-medium transition duration-200 transform hover:translate-y-[-2px]">Login</button>
   </form>
+  
+  <p class="mt-6 text-center text-gray-400">Don't have an account? <a href="/signup" class="text-blue-400 hover:underline">Sign up</a></p>
 </div>
 {% endblock %}

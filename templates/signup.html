@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+{% block title %}Sign Up{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto bg-[#222] p-6 rounded-md">
+  <h2 class="text-2xl mb-4">Sign Up</h2>
+  {% if error %}
+  <p class="text-red-500 mb-3">{{ error }}</p>
+  {% endif %}
+  <form method="POST" class="flex flex-col space-y-4">
+    <input type="text" name="username" placeholder="Username" class="p-2 rounded bg-[#333] text-white" required />
+    <input type="password" name="password" placeholder="Password" class="p-2 rounded bg-[#333] text-white" required />
+    <input type="password" name="confirm_password" placeholder="Confirm Password" class="p-2 rounded bg-[#333] text-white" required />
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 p-2 rounded text-white">Sign Up</button>
+  </form>
+  <p class="mt-4 text-gray-400 text-sm">Already have an account? <a href="/login" class="text-blue-400 hover:underline">Login</a></p>
+</div>
+{% endblock %}

@@ -1,43 +1,124 @@
 {% extends 'layout.html' %}
 
-{% block title %}Home - Video Sharing{% endblock %}
+{% block title %}Home - OnlyFans Nepal{% endblock %}
 
 {% block content %}
-<div class="p-8 bg-[#181818] min-h-screen">
+<!-- Hero Banner -->
+<div id="welcome-hero" class="relative bg-gradient-to-br from-blue-900 via-black to-black rounded-2xl shadow-2xl mb-10 overflow-hidden flex flex-col md:flex-row items-center justify-between p-8 md:p-16 border border-blue-900">
+  <button onclick="closeWelcomeHero()" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl focus:outline-none z-10 bg-[#23272f] rounded-full w-10 h-10 flex items-center justify-center shadow-lg"><i class="fas fa-times"></i></button>
+  <div class="flex-1">
+    <div class="flex items-center gap-4 mb-4">
+      <img src="/static/logo.png" alt="Logo" class="w-16 h-16 rounded-xl shadow-xl border-2 border-blue-400" />
+      <h1 class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-blue-700 bg-clip-text text-transparent">Welcome to OnlyFans Nepal</h1>
+    </div>
+    <p class="text-lg text-gray-300 mb-6 max-w-xl">Discover, upload, and share amazing videos. Join the community and enjoy trending, music, gaming, movies, and more!</p>
+    <form action="/search" method="get" class="flex w-full max-w-md">
+      <input type="text" name="q" placeholder="Search videos..." class="flex-1 bg-[#23272f] border border-[#333] text-white px-4 py-3 rounded-l-full focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-inner" />
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-r-full font-semibold transition">Search</button>
+    </form>
+  </div>
+  <div class="hidden md:block flex-1 text-center">
+    <img src="/static/logo.png" alt="Logo" class="w-72 h-72 mx-auto opacity-90 rounded-2xl shadow-2xl border-2 border-blue-400" />
+  </div>
+</div>
+<script>
+  // Cookie helpers
+  function setCookie(name, value, days) {
+    const d = new Date();
+    d.setTime(d.getTime() + (days*24*60*60*1000));
+    document.cookie = name + "=" + value + ";expires=" + d.toUTCString() + ";path=/";
+  }
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+    return v ? v[2] : null;
+  }
+  function closeWelcomeHero() {
+    document.getElementById('welcome-hero').style.display = 'none';
+    setCookie('hideWelcomeHero', '1', 2);
+  }
+  // Show hero if cookie not set
+  document.addEventListener('DOMContentLoaded', function() {
+    if (!getCookie('hideWelcomeHero')) {
+      document.getElementById('welcome-hero').style.display = '';
+    }
+  });
+</script>
 
+<!-- Featured Videos -->
+<div class="mb-12">
+  <div class="flex items-center mb-6">
+    <h2 class="text-2xl font-bold flex items-center">
+      <i class="fas fa-fire text-red-500 mr-2"></i> Featured Videos
+    </h2>
+  </div>
   {% if videos %}
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    {% for vid in videos %}
-    <a href="/watch/{{ vid[0] }}" class="block bg-gray-900 rounded-xl overflow-hidden hover:shadow-2xl transition duration-300 cursor-pointer">
-
-      <video 
-        class="w-full h-48 object-cover rounded-t-xl" 
-        muted 
-        preload="metadata" 
-        playsinline
-        poster="/static/thumbnails/{{ vid[2].replace('.mp4', '.jpg') }}"
-      >
-        <source src="/static/videos/{{ vid[2] }}" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-
-      <div class="p-4 flex items-center gap-3">
-        <div class="w-10 h-10 bg-gray-700 rounded-full flex-shrink-0"></div>
-        <div class="flex flex-col overflow-hidden">
-          <h3 class="text-white font-semibold text-md truncate">{{ vid[1] }}</h3>
-          <p class="text-sm text-gray-400">By Admin</p>
-          <p class="text-xs text-gray-500">Views • Date</p>
+  <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+    {% for video in videos %}
+    <div class="group relative bg-[#181818] rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition duration-300 border border-[#23272f] flex flex-col">
+      <a href="/watch/{{ video.id }}" class="block">
+        <div class="relative w-full aspect-video bg-[#111] flex items-center justify-center">
+          <video 
+            src="/static/thumbnails/{{ video.filename.rsplit('.', 1)[0] }}_clip.mp4"
+            class="w-full h-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300"
+            autoplay muted loop playsinline
+            poster="/static/thumbnails/{{ video.filename.rsplit('.', 1)[0] }}.jpg"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+          ></video>
+          <img 
+            src="/static/thumbnails/{{ video.filename.rsplit('.', 1)[0] }}.jpg" 
+            alt="Thumbnail" 
+            class="w-full h-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-300" 
+            style="display:none;"
+            onerror="this.style.display='none';"
+          >
+          <video style="display:none;" class="custom-player absolute inset-0 w-full h-full object-cover rounded-t-2xl bg-black" preload="metadata" poster="/static/thumbnails/{{ video.filename.rsplit('.', 1)[0] }}.jpg" onclick="this.paused ? this.play() : this.pause()" controlslist="nodownload">
+            <source src="/static/videos/{{ video.filename }}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <div class="absolute bottom-2 right-2 bg-black bg-opacity-80 text-white text-xs px-2 py-1 rounded z-10" id="duration-{{ video.id }}">--:--</div>
+          {% if loop.index0 < 3 %}
+          <span class="absolute top-2 left-2 bg-gradient-to-r from-red-500 to-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">Trending</span>
+          {% endif %}
         </div>
-      </div>
-
-    </a>
+        <div class="p-4 flex-1 flex flex-col">
+          <div class="flex space-x-3 items-center mb-2">
+            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg border-2 border-blue-400 shadow">{{ video.uploader and video.uploader[0]|upper or '?' }}</div>
+            <div class="flex-1 overflow-hidden">
+              <h3 class="text-white font-semibold text-base md:text-lg leading-tight mb-1 truncate">{{ video.title }}</h3>
+              <p class="text-xs md:text-sm text-gray-400 truncate">{{ video.uploader or 'Unknown' }}</p>
+            </div>
+          </div>
+          <div class="flex items-center text-xs text-gray-500 mt-auto">
+            <span><i class="fas fa-eye mr-1"></i>{{ video.views }} views</span>
+            <span class="mx-1">•</span>
+            <span><i class="fas fa-calendar-alt mr-1"></i>{{ video.created_at.split(' ')[0] }}</span>
+          </div>
+        </div>
+      </a>
+    </div>
     {% endfor %}
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('video.custom-player').forEach(function(video) {
+        video.addEventListener('loadedmetadata', function() {
+          var duration = video.duration;
+          var minutes = Math.floor(duration / 60);
+          var seconds = Math.floor(duration % 60);
+          var formatted = minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+          var id = 'duration-' + video.closest('.group').querySelector('a').href.split('/').pop();
+          var durationDiv = document.getElementById(id);
+          if(durationDiv) durationDiv.textContent = formatted;
+        });
+      });
+    });
+  </script>
   {% else %}
-  <div class="text-center text-gray-400 mt-20 text-lg">
-    No videos uploaded yet. Be the first to <a href="/upload" class="text-blue-400 underline">upload one</a>.
+  <div class="bg-[#222] rounded-lg p-8 text-center border border-[#23272f]">
+    <div class="text-5xl mb-4 text-gray-700"><i class="fas fa-video-slash"></i></div>
+    <h3 class="text-xl font-medium text-gray-300 mb-2">No videos available</h3>
+    <p class="text-gray-400 mb-6">Be the first to share a video with the community</p>
   </div>
   {% endif %}
-
 </div>
 {% endblock %}
