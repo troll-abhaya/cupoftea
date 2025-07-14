@@ -5,11 +5,17 @@ import sqlite3
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-# Import user_stats from the correct location
+
+# Import custom modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from user_stats import get_user_stats
-import subprocess
 from generate_thumbnail import generate_thumbnail, generate_video_thumbnail
+from tenshi import Tenshi
+
+# Check if profile_route.py exists to import edit_profile_route
+from app.profile_route import edit_profile_route
+from app import get_db, close_db, init_db
+
 
 UPLOAD_FOLDER = 'static/videos'
 app = Flask(__name__)
@@ -20,46 +26,8 @@ app.secret_key = 'your_secret_key'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # ─── DATABASE SETUP ───────────────────────────────────────────
-def get_db():
-    db = getattr(g, '_database', None)
-    if db is None:
-        db = g._database = sqlite3.connect('database.db')
-        db.row_factory = sqlite3.Row
-    return db
 
-@app.teardown_appcontext
-def close_db(exception):
-    db = getattr(g, '_database', None)
-    if db is not None:
-        db.close()
 
-def init_db():
-    with app.app_context():
-        db = get_db()
-        cursor = db.cursor()
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-        ''')
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS videos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT NOT NULL,
-            filename TEXT NOT NULL,
-            description TEXT,
-            user_id INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            views INTEGER DEFAULT 0,
-            FOREIGN KEY (user_id) REFERENCES users (id)
-        )
-        ''')
-        db.commit()
-
-# Add missing column if needed
 def add_views_column_if_missing():
     db = get_db()
     try:
@@ -83,6 +51,24 @@ def index():
     """).fetchall()
     return render_template('index.html', videos=videos)
 
+@app.route('/onlyfans-ai')
+def onlyfans_ai():
+    return render_template('ai/only-fans-nepal.html')
+
+@app.route('/user/<username>')
+def user_profile(username):
+    db = get_db()
+    user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+
+    if not user:
+        flash("User not found", "error")
+        return redirect(url_for('index'))
+
+    videos = db.execute("""SELECT * FROM videos WHERE user_id = ? ORDER BY created_at DESC""", (user['id'],)).fetchall()
+    stats = get_user_stats(user['id'])
+
+    return render_template('profile.html', username=user['username'], videos=videos, user=user, stats=stats)
+
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     if 'user_id' not in session:
@@ -98,18 +84,17 @@ def upload():
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            # Generate thumbnail
+            # Generate thumbnails
             video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             thumbnail_dir = os.path.join('static', 'thumbnails')
             os.makedirs(thumbnail_dir, exist_ok=True)
             thumbnail_path = os.path.join(thumbnail_dir, f"{os.path.splitext(filename)[0]}.jpg")
             try:
                 generate_thumbnail(video_path, thumbnail_path)
-                # Generate video clip thumbnail
                 clip_path = os.path.join(thumbnail_dir, f"{os.path.splitext(filename)[0]}_clip.mp4")
                 generate_video_thumbnail(video_path, clip_path)
             except Exception as e:
-                flash(f'Video uploaded, but failed to generate thumbnail: {e}', 'error')
+                flash(f'Video uploaded, but thumbnail generation failed: {e}', 'error')
 
             db = get_db()
             db.execute(
@@ -128,12 +113,13 @@ def upload():
 def watch(video_id):
     db = get_db()
     db.execute("UPDATE videos SET views = views + 1 WHERE id = ?", (video_id,))
+    db.commit()
+
     video = db.execute("""
         SELECT v.*, u.username as uploader 
         FROM videos v LEFT JOIN users u ON v.user_id = u.id 
         WHERE v.id = ?
     """, (video_id,)).fetchone()
-    db.commit()
 
     if not video:
         flash('Video not found', 'error')
@@ -188,6 +174,10 @@ def profile():
 
     return render_template('profile.html', username=session['username'], videos=videos, user=user, stats=stats)
 
+@app.route('/profile/edit', methods=['GET', 'POST'])
+def profile_edit():
+    return edit_profile_route()
+
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
@@ -211,8 +201,7 @@ def signup():
         cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
         db.commit()
 
-        user_id = cursor.lastrowid
-        session['user_id'] = user_id
+        session['user_id'] = cursor.lastrowid
         session['username'] = username
         flash('Account created successfully!', 'success')
         return redirect(url_for('index'))
@@ -241,9 +230,11 @@ def privacy():
 def how_to_earn():
     return render_template('how_to_earn.html')
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
 # ─── MAIN ─────────────────────────────────────────────────────
 if __name__ == '__main__':
     init_db()
-    with app.app_context():
-        add_views_column_if_missing()
     app.run(debug=True)

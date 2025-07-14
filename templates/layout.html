@@ -45,7 +45,7 @@
       height: 8px;
     }
     ::-webkit-scrollbar-track {
-      background: #111;
+      background: #000;
     }
     ::-webkit-scrollbar-thumb {
       background: #333;
@@ -65,12 +65,12 @@
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 </head>
-<body class="bg-[#000] text-white">
+<body class="bg-black text-white">
   <div id="install-app-banner" style="display:none; position:fixed; bottom:24px; left:0; right:0; z-index:9999; justify-content:center; align-items:center;">
-    <div class="mx-auto max-w-xs bg-[#181818] border border-[#333] rounded-xl shadow-lg flex items-center p-4 gap-4">
+    <div class="mx-auto max-w-xs bg-black border border-[#333] rounded-xl shadow-lg flex items-center p-4 gap-4">
       <img src="/static/Nep-Hub.svg" alt="App Icon" class="w-10 h-10 rounded" />
       <div class="flex-1">
-        <div class="font-semibold text-white text-base">Install OnlyFans Nepal?</div>
+        <div class="font-semibold text-white text-base">Install this App?</div>
         <div class="text-xs text-gray-400">Get the full app experience on your device.</div>
       </div>
       <button onclick="installApp()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md font-medium text-sm">Install</button>
@@ -78,11 +78,11 @@
     </div>
   </div>
   <!-- Top Navbar/Header (mobile & desktop) -->
-  <header class="bg-gradient-to-r from-[#181818] via-[#222] to-[#181818] border-b border-[#333] sticky top-0 z-30 w-full flex items-center justify-between px-4 py-2 md:px-8 md:py-4 shadow-lg">
+  <header class="bg-black border-b border-[#333] sticky top-0 z-30 w-full flex items-center justify-between px-4 py-2 md:px-8 md:py-4 shadow-lg">
     <!-- Left: Logo -->
     <a href="/" class="flex items-center space-x-2">
       <img src="/static/logo.png" alt="Logo" class="w-10 h-10 md:w-14 md:h-14 rounded shadow-lg" />
-      <span class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-blue-400 to-blue-700 bg-clip-text text-transparent hidden sm:inline">OnlyFans Nepal</span>
+      <!-- Removed OnlyFans Nepal text -->
     </a>
     <!-- Center: Search (desktop) -->
     <div class="hidden md:flex flex-1 max-w-2xl mx-8">
